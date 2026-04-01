@@ -1,265 +1,344 @@
-import React, { useState, useEffect } from 'react';
-import { Target, Database, Search, Settings, BarChart2, Rocket, CheckCircle, RefreshCcw, Info, ArrowRight, PlayCircle, BookOpen, XCircle } from 'lucide-react';
-
-// Data derived from the provided PPT
-const STAGES = [
-  { id: 'scoping', order: 1, title: 'Problem Scoping', desc: 'Clearly define the problem. Use the 4W Problem Canvas (Who, What, Where, Why).', icon: Target, color: 'bg-orange-100 text-orange-600 border-orange-300' },
-  { id: 'acquisition', order: 2, title: 'Data Acquisition', desc: 'Collect reliable data from surveys, sensors, databases, or web scraping.', icon: Database, color: 'bg-teal-100 text-teal-600 border-teal-300' },
-  { id: 'exploration', order: 3, title: 'Data Exploration', desc: 'Visualise, clean, and understand the data. Identify patterns and outliers.', icon: Search, color: 'bg-red-100 text-red-600 border-red-300' },
-  { id: 'modelling', order: 4, title: 'Modelling', desc: 'Choose and train an AI model (Rule-based or Learning-based) to find patterns.', icon: Settings, color: 'bg-indigo-100 text-indigo-600 border-indigo-300' },
-  { id: 'evaluation', order: 5, title: 'Evaluation', desc: 'Test model performance (accuracy, precision, recall) and check for bias.', icon: BarChart2, color: 'bg-pink-100 text-pink-600 border-pink-300' },
-  { id: 'deployment', order: 6, title: 'Deployment', desc: 'Launch the AI solution for real-world use and monitor its performance.', icon: Rocket, color: 'bg-green-100 text-green-600 border-green-300' },
-];
-
-export default function App() {
-  const [mode, setMode] = useState('learn'); // 'learn' or 'practice'
-  
-  // Game State
-  const [availableItems, setAvailableItems] = useState([]);
-  const [slots, setSlots] = useState(Array(6).fill(null));
-  const [gameState, setGameState] = useState('playing'); // 'playing', 'won', 'error'
-
-  // Shuffle function
-  const shuffleArray = (array) => {
-    const newArr = [...array];
-    for (let i = newArr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-    }
-    return newArr;
-  };
-
-  const initGame = () => {
-    setAvailableItems(shuffleArray(STAGES));
-    setSlots(Array(6).fill(null));
-    setGameState('playing');
-  };
-
-  useEffect(() => {
-    if (mode === 'practice') {
-      initGame();
-    }
-  }, [mode]);
-
-  const handleSelect = (item) => {
-    if (gameState === 'won') return;
-    
-    const firstEmptyIndex = slots.findIndex(slot => slot === null);
-    if (firstEmptyIndex !== -1) {
-      const newSlots = [...slots];
-      newSlots[firstEmptyIndex] = item;
-      setSlots(newSlots);
-      setAvailableItems(availableItems.filter(i => i.id !== item.id));
-    }
-  };
-
-  const handleDeselect = (index) => {
-    if (gameState === 'won' || !slots[index]) return;
-    
-    const item = slots[index];
-    const newSlots = [...slots];
-    newSlots[index] = null;
-    setSlots(newSlots);
-    setAvailableItems([...availableItems, item]);
-    setGameState('playing'); // Reset error state if they remove an item
-  };
-
-  const checkAnswer = () => {
-    if (slots.includes(null)) {
-      alert("Please fill all the slots first!");
-      return;
-    }
-
-    const isCorrect = slots.every((slot, index) => slot.order === index + 1);
-    if (isCorrect) {
-      setGameState('won');
-    } else {
-      setGameState('error');
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 md:p-8">
-      <div className="max-w-5xl mx-auto">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Project Cycle Interactivity</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 md:p-8">
+    <div class="max-w-5xl mx-auto">
         
-        {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-center mb-8 pb-4 border-b border-slate-200">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-              <RefreshCcw className="text-blue-600" size={32} />
-              AI Project Cycle
-            </h1>
-            <p className="text-slate-500 mt-1 text-sm md:text-base">CBSE Class 10 | Unit 1.1 | SkillianLab</p>
-          </div>
-          
-          <div className="mt-4 md:mt-0 flex bg-slate-200 p-1 rounded-lg">
-            <button 
-              onClick={() => setMode('learn')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors ${mode === 'learn' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-            >
-              <BookOpen size={18} /> Learn
-            </button>
-            <button 
-              onClick={() => setMode('practice')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors ${mode === 'practice' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-            >
-              <PlayCircle size={18} /> Practice
-            </button>
-          </div>
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 pb-4 border-b border-slate-200">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="refresh-ccw" class="text-blue-600 w-8 h-8"></i>
+                    AI Project Cycle
+                </h1>
+                <p class="text-slate-500 mt-1 text-sm md:text-base">CBSE Class 10 | Unit 1.1 | SkillianLab</p>
+            </div>
+            
+            <div class="mt-4 md:mt-0 flex bg-slate-200 p-1 rounded-lg">
+                <button id="btn-learn" onclick="setMode('learn')" class="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors bg-white text-blue-700 shadow-sm">
+                    <i data-lucide="book-open" class="w-[18px] h-[18px]"></i> Learn
+                </button>
+                <button id="btn-practice" onclick="setMode('practice')" class="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors text-slate-600 hover:text-slate-900">
+                    <i data-lucide="play-circle" class="w-[18px] h-[18px]"></i> Practice
+                </button>
+            </div>
         </header>
 
-        {/* --- LEARN MODE --- */}
-        {mode === 'learn' && (
-          <div className="animate-fade-in">
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
-              <h2 className="text-xl font-semibold mb-2">The 6 Stages of the AI Project Cycle</h2>
-              <p className="text-slate-600 mb-6">A step-by-step framework to build any AI project. It helps us go from identifying a problem to deploying an AI solution.</p>
-              
-              <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
-                {STAGES.map((stage, index) => (
-                  <div key={stage.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    {/* Timeline dot */}
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-500 text-white font-bold shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                      {stage.order}
+        <!-- --- LEARN MODE --- -->
+        <div id="learn-mode" class="animate-fade-in block">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-2">The 6 Stages of the AI Project Cycle</h2>
+                <p class="text-slate-600 mb-6">A step-by-step framework to build any AI project. It helps us go from identifying a problem to deploying an AI solution.</p>
+                
+                <div id="learn-timeline" class="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+                    <!-- Timeline items will be injected here via JS -->
+                </div>
+            </div>
+
+            <div class="bg-amber-50 rounded-xl border border-amber-200 p-5 flex items-start gap-4">
+                <i data-lucide="info" class="text-amber-500 shrink-0 mt-0.5"></i>
+                <div>
+                    <h4 class="font-bold text-amber-800">Key Takeaway: Iteration</h4>
+                    <p class="text-amber-700 text-sm mt-1">
+                        The AI Project Cycle is not always linear! You may need to go back to earlier stages to refine your data or improve your model. This process of looping back is called <strong>iteration</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- --- PRACTICE MODE --- -->
+        <div id="practice-mode" class="animate-fade-in hidden">
+            <div class="flex flex-col md:flex-row gap-8">
+                
+                <!-- Left Side: Empty Slots -->
+                <div class="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Build the Cycle</h2>
+                        <button onclick="initGame()" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
+                            <i data-lucide="refresh-ccw" class="w-3.5 h-3.5"></i> Reset
+                        </button>
+                    </div>
+                    <p class="text-sm text-slate-500 mb-6">Click the cards on the right to place them in the correct sequential order (1 to 6).</p>
+                    
+                    <div id="slots-container" class="space-y-3">
+                        <!-- Slots injected via JS -->
+                    </div>
+
+                    <div class="mt-8 pt-4 border-t border-slate-100" id="feedback-container">
+                        <!-- Feedback/Button injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Right Side: Available Cards -->
+                <div class="flex-1">
+                    <div class="bg-slate-100 rounded-xl border border-slate-200 p-6 h-full">
+                        <h3 class="font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                            Available Stages <span id="available-count" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs">6</span>
+                        </h3>
+                        
+                        <div id="available-container">
+                            <!-- Available items injected via JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Data derived from the provided PPT
+        const STAGES = [
+            { id: 'scoping', order: 1, title: 'Problem Scoping', desc: 'Clearly define the problem. Use the 4W Problem Canvas (Who, What, Where, Why).', icon: 'target', color: 'bg-orange-100 text-orange-600 border-orange-300' },
+            { id: 'acquisition', order: 2, title: 'Data Acquisition', desc: 'Collect reliable data from surveys, sensors, databases, or web scraping.', icon: 'database', color: 'bg-teal-100 text-teal-600 border-teal-300' },
+            { id: 'exploration', order: 3, title: 'Data Exploration', desc: 'Visualise, clean, and understand the data. Identify patterns and outliers.', icon: 'search', color: 'bg-red-100 text-red-600 border-red-300' },
+            { id: 'modelling', order: 4, title: 'Modelling', desc: 'Choose and train an AI model (Rule-based or Learning-based) to find patterns.', icon: 'settings', color: 'bg-indigo-100 text-indigo-600 border-indigo-300' },
+            { id: 'evaluation', order: 5, title: 'Evaluation', desc: 'Test model performance (accuracy, precision, recall) and check for bias.', icon: 'bar-chart-2', color: 'bg-pink-100 text-pink-600 border-pink-300' },
+            { id: 'deployment', order: 6, title: 'Deployment', desc: 'Launch the AI solution for real-world use and monitor its performance.', icon: 'rocket', color: 'bg-green-100 text-green-600 border-green-300' },
+        ];
+
+        // State Variables
+        let mode = 'learn';
+        let availableItems = [];
+        let slots = Array(6).fill(null);
+        let gameState = 'playing'; // 'playing', 'won', 'error'
+
+        // Initialize App
+        function initApp() {
+            renderLearnMode();
+            lucide.createIcons();
+        }
+
+        // Toggle Modes
+        function setMode(newMode) {
+            mode = newMode;
+            
+            const learnBtn = document.getElementById('btn-learn');
+            const practiceBtn = document.getElementById('btn-practice');
+            const learnModeDiv = document.getElementById('learn-mode');
+            const practiceModeDiv = document.getElementById('practice-mode');
+
+            if (mode === 'learn') {
+                learnBtn.className = "flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors bg-white text-blue-700 shadow-sm";
+                practiceBtn.className = "flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors text-slate-600 hover:text-slate-900";
+                learnModeDiv.classList.remove('hidden');
+                practiceModeDiv.classList.add('hidden');
+            } else {
+                practiceBtn.className = "flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors bg-white text-blue-700 shadow-sm";
+                learnBtn.className = "flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors text-slate-600 hover:text-slate-900";
+                practiceModeDiv.classList.remove('hidden');
+                learnModeDiv.classList.add('hidden');
+                initGame();
+            }
+        }
+
+        // Shuffle Array Helper
+        function shuffleArray(array) {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+        }
+
+        // Game Logic Setup
+        function initGame() {
+            availableItems = shuffleArray(STAGES);
+            slots = Array(6).fill(null);
+            gameState = 'playing';
+            renderPracticeMode();
+        }
+
+        function handleSelect(itemId) {
+            if (gameState === 'won') return;
+            
+            const itemIndex = availableItems.findIndex(i => i.id === itemId);
+            if (itemIndex === -1) return;
+            const item = availableItems[itemIndex];
+
+            const firstEmptyIndex = slots.findIndex(slot => slot === null);
+            if (firstEmptyIndex !== -1) {
+                slots[firstEmptyIndex] = item;
+                availableItems.splice(itemIndex, 1);
+                renderPracticeMode();
+            }
+        }
+
+        function handleDeselect(index) {
+            if (gameState === 'won' || !slots[index]) return;
+            
+            const item = slots[index];
+            slots[index] = null;
+            availableItems.push(item);
+            gameState = 'playing'; // reset error state on interaction
+            renderPracticeMode();
+        }
+
+        function checkAnswer() {
+            if (slots.includes(null)) {
+                alert("Please fill all the slots first!");
+                return;
+            }
+
+            const isCorrect = slots.every((slot, index) => slot.order === index + 1);
+            if (isCorrect) {
+                gameState = 'won';
+            } else {
+                gameState = 'error';
+            }
+            renderPracticeMode();
+        }
+
+        // --- Render Functions ---
+
+        function renderLearnMode() {
+            const container = document.getElementById('learn-timeline');
+            container.innerHTML = STAGES.map((stage, index) => `
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                    <!-- Timeline dot -->
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-500 text-white font-bold shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                        ${stage.order}
                     </div>
                     
-                    {/* Content Card */}
-                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] p-4 rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow flex items-start gap-4">
-                      <div className={`p-3 rounded-lg border ${stage.color}`}>
-                        <stage.icon size={24} />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-lg text-slate-800">{stage.title}</h3>
-                        <p className="text-sm text-slate-600 mt-1 leading-relaxed">{stage.desc}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-amber-50 rounded-xl border border-amber-200 p-5 flex items-start gap-4">
-              <Info className="text-amber-500 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-bold text-amber-800">Key Takeaway: Iteration</h4>
-                <p className="text-amber-700 text-sm mt-1">
-                  The AI Project Cycle is not always linear! You may need to go back to earlier stages to refine your data or improve your model. This process of looping back is called <strong>iteration</strong>.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* --- PRACTICE MODE --- */}
-        {mode === 'practice' && (
-          <div className="animate-fade-in">
-            <div className="flex flex-col md:flex-row gap-8">
-              
-              {/* Left Side: Empty Slots */}
-              <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">Build the Cycle</h2>
-                  <button onClick={initGame} className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
-                    <RefreshCcw size={14} /> Reset
-                  </button>
-                </div>
-                <p className="text-sm text-slate-500 mb-6">Click the cards on the right to place them in the correct sequential order (1 to 6).</p>
-                
-                <div className="space-y-3">
-                  {slots.map((slot, index) => (
-                    <div 
-                      key={index} 
-                      onClick={() => handleDeselect(index)}
-                      className={`relative min-h-[4rem] flex items-center p-3 rounded-lg border-2 transition-all cursor-pointer ${
-                        slot 
-                          ? `${slot.color} bg-opacity-50 border-solid hover:opacity-80` 
-                          : 'border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100'
-                      }`}
-                    >
-                      <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-sm">
-                        {index + 1}
-                      </div>
-                      
-                      {slot ? (
-                        <div className="flex items-center gap-3 w-full ml-4">
-                          <slot.icon size={20} />
-                          <span className="font-semibold flex-1">{slot.title}</span>
-                          <XCircle size={16} className="text-slate-400 opacity-50" />
+                    <!-- Content Card -->
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] p-4 rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow flex items-start gap-4">
+                        <div class="p-3 rounded-lg border ${stage.color}">
+                            <i data-lucide="${stage.icon}" class="w-6 h-6"></i>
                         </div>
-                      ) : (
-                        <span className="text-slate-400 ml-4 italic text-sm">Empty Slot {index + 1}</span>
-                      )}
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-800">${stage.title}</h3>
+                            <p class="text-sm text-slate-600 mt-1 leading-relaxed">${stage.desc}</p>
+                        </div>
                     </div>
-                  ))}
                 </div>
+            `).join('');
+        }
 
-                <div className="mt-8 pt-4 border-t border-slate-100">
-                  {gameState === 'won' ? (
-                     <div className="bg-green-100 text-green-800 p-4 rounded-lg flex items-center gap-3 border border-green-300">
-                       <CheckCircle className="text-green-600 shrink-0" size={24} />
-                       <div>
-                         <p className="font-bold">Excellent job!</p>
-                         <p className="text-sm">You've successfully mapped the AI Project Cycle.</p>
-                       </div>
-                     </div>
-                  ) : gameState === 'error' ? (
-                    <div className="bg-red-50 text-red-800 p-4 rounded-lg flex items-center gap-3 border border-red-200">
-                       <XCircle className="text-red-500 shrink-0" size={24} />
-                       <div>
-                         <p className="font-bold">Not quite right.</p>
-                         <p className="text-sm">Check the sequence again. Click a slotted item to remove it.</p>
-                       </div>
-                     </div>
-                  ) : (
-                    <button 
-                      onClick={checkAnswer}
-                      disabled={slots.includes(null)}
-                      className="w-full py-3 rounded-lg bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
-                    >
-                      Check Sequence
-                    </button>
-                  )}
-                </div>
-              </div>
+        function renderPracticeMode() {
+            renderSlots();
+            renderAvailableItems();
+            renderFeedback();
+            lucide.createIcons(); // Re-initialize icons for newly added DOM elements
+        }
 
-              {/* Right Side: Available Cards */}
-              <div className="flex-1">
-                <div className="bg-slate-100 rounded-xl border border-slate-200 p-6 h-full">
-                  <h3 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
-                    Available Stages <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs">{availableItems.length}</span>
-                  </h3>
-                  
-                  {availableItems.length === 0 ? (
-                    <div className="h-40 flex items-center justify-center border-2 border-dashed border-slate-300 rounded-lg text-slate-400">
-                      All stages placed!
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-3">
-                      {availableItems.map((item) => (
-                        <div 
-                          key={item.id}
-                          onClick={() => handleSelect(item)}
-                          className="group flex flex-col p-4 rounded-lg bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-400 cursor-pointer transition-all active:scale-[0.98]"
-                        >
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className={`p-2 rounded-md border ${item.color}`}>
-                              <item.icon size={18} />
+        function renderSlots() {
+            const container = document.getElementById('slots-container');
+            container.innerHTML = slots.map((slot, index) => {
+                if (slot) {
+                    return `
+                        <div onclick="handleDeselect(${index})" class="relative min-h-[4rem] flex items-center p-3 rounded-lg border-2 transition-all cursor-pointer ${slot.color} bg-opacity-50 border-solid hover:opacity-80">
+                            <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                                ${index + 1}
                             </div>
-                            <h4 className="font-bold text-slate-800 group-hover:text-blue-700 transition-colors">{item.title}</h4>
-                          </div>
-                          <p className="text-xs text-slate-500 pl-11">{item.desc}</p>
+                            <div class="flex items-center gap-3 w-full ml-4">
+                                <i data-lucide="${slot.icon}" class="w-5 h-5"></i>
+                                <span class="font-semibold flex-1">${slot.title}</span>
+                                <i data-lucide="x-circle" class="w-4 h-4 text-slate-400 opacity-50"></i>
+                            </div>
                         </div>
-                      ))}
+                    `;
+                } else {
+                    return `
+                        <div onclick="handleDeselect(${index})" class="relative min-h-[4rem] flex items-center p-3 rounded-lg border-2 transition-all cursor-pointer border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100">
+                            <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                                ${index + 1}
+                            </div>
+                            <span class="text-slate-400 ml-4 italic text-sm">Empty Slot ${index + 1}</span>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        function renderAvailableItems() {
+            const container = document.getElementById('available-container');
+            document.getElementById('available-count').innerText = availableItems.length;
+
+            if (availableItems.length === 0) {
+                container.innerHTML = `
+                    <div class="h-40 flex items-center justify-center border-2 border-dashed border-slate-300 rounded-lg text-slate-400">
+                        All stages placed!
                     </div>
-                  )}
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 gap-3">
+                    ${availableItems.map(item => `
+                        <div onclick="handleSelect('${item.id}')" class="group flex flex-col p-4 rounded-lg bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-400 cursor-pointer transition-all active:scale-[0.98]">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="p-2 rounded-md border ${item.color}">
+                                    <i data-lucide="${item.icon}" class="w-[18px] h-[18px]"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-800 group-hover:text-blue-700 transition-colors">${item.title}</h4>
+                            </div>
+                            <p class="text-xs text-slate-500 pl-11">${item.desc}</p>
+                        </div>
+                    `).join('')}
                 </div>
-              </div>
+            `;
+        }
 
-            </div>
-          </div>
-        )}
+        function renderFeedback() {
+            const container = document.getElementById('feedback-container');
+            const isBoardFull = !slots.includes(null);
 
-      </div>
-    </div>
-  );
-}
+            if (gameState === 'won') {
+                container.innerHTML = `
+                    <div class="bg-green-100 text-green-800 p-4 rounded-lg flex items-center gap-3 border border-green-300">
+                        <i data-lucide="check-circle" class="text-green-600 shrink-0 w-6 h-6"></i>
+                        <div>
+                            <p class="font-bold">Excellent job!</p>
+                            <p class="text-sm">You've successfully mapped the AI Project Cycle.</p>
+                        </div>
+                    </div>
+                `;
+            } else if (gameState === 'error') {
+                container.innerHTML = `
+                    <div class="bg-red-50 text-red-800 p-4 rounded-lg flex items-center gap-3 border border-red-200">
+                        <i data-lucide="x-circle" class="text-red-500 shrink-0 w-6 h-6"></i>
+                        <div>
+                            <p class="font-bold">Not quite right.</p>
+                            <p class="text-sm">Check the sequence again. Click a slotted item to remove it.</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button 
+                        onclick="checkAnswer()"
+                        ${!isBoardFull ? 'disabled' : ''}
+                        class="w-full py-3 rounded-lg font-bold text-lg transition-colors ${isBoardFull ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}"
+                    >
+                        Check Sequence
+                    </button>
+                `;
+            }
+        }
+
+        // Run setup on load
+        window.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
+</body>
+</html>
